@@ -1,0 +1,40 @@
+﻿@page "/orders"
+@using OrderingSystem.Shared.Models
+@inject OrderingSystem.Client.Services.OrderService OrderService
+
+<h3>Orders</h3>
+
+<button @onclick="Load">Refresh</button>
+
+<ul>
+    @foreach (var o in orders)
+    {
+        <li>@o.CustomerName — @o.Total — @o.Status (@o.CreatedAt.ToLocalTime())</li>
+    }
+</ul>
+
+<hr />
+<h4>Create Order</h4>
+<input placeholder="Customer name" @bind="newOrder.CustomerName" />
+<input type="number" placeholder="Total" @bind="newOrder.Total" />
+
+<button @onclick="Create">Create</button>
+
+@code {
+    private List<Order> orders = new();
+    private Order newOrder = new Order();
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        orders = await OrderService.GetOrdersAsync();
+    }
+
+    private async Task Create()
+    {
+        await OrderService.CreateOrderAsync(newOrder);
+        newOrder = new Order();
+        await Load();
+    }
+}
