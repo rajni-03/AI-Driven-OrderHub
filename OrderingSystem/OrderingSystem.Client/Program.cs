@@ -8,12 +8,10 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// ✅ Configure HttpClient for API calls
-builder.Services.AddScoped(sp => new HttpClient
-{
-    BaseAddress = new Uri("https://localhost:5001/") // We'll point this to our server API later
-});
-builder.Services.AddScoped<OrderService>();
+// ✅ Use the server host as base address
+builder.Services.AddScoped(sp =>
+    new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
+builder.Services.AddScoped<OrderService>();
 
 await builder.Build().RunAsync();
