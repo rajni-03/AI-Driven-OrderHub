@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ? Register HttpClient for API calls (pointing to your Server URL)
 builder.Services.AddScoped(sp =>
-    new HttpClient { BaseAddress = new Uri("https://localhost:5255") });
+    new HttpClient { BaseAddress = new Uri("http://localhost:5255/") });
 
 // ? Register OrderService
 builder.Services.AddScoped<OrderService>();

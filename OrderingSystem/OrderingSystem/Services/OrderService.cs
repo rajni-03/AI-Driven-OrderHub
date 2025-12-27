@@ -13,7 +13,7 @@ namespace OrderingSystem.Services
 
         public async Task<Order?> CreateOrderAsync(Order order)
         {
-            var response = await _http.PostAsJsonAsync("api/orders", order);
+            var response = await _http.PostAsJsonAsync("api/Orders", order);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<Order>();
         }
