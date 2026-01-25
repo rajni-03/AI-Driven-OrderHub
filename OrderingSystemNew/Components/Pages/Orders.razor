@@ -1,0 +1,191 @@
+﻿@page "/orders"
+@rendermode InteractiveServer
+@using OrderingSystemNew.Models
+@inject OrderingSystemNew.Services.OrderService OrderService
+
+<h3>Orders</h3>
+
+<button class="btn btn-primary mb-3" @onclick="Load" disabled="@isLoading">
+    @if (isLoading)
+    {
+        <span>Loading...</span>
+    }
+    else
+    {
+        <span>Refresh</span>
+    }
+</button>
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+    </div>
+}
+
+@if (orders.Count == 0)
+{
+    <p>No orders found.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var order in orders)
+        {
+            <li class="list-group-item mb-2">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>@order.CustomerName</strong> — Qty: @order.Quantity — Total: @order.Total — @order.Status — @order.CreatedAt.ToString("dd-MM-yyyy HH:mm:ss")
+                    </div>
+                    <select class="form-select" style="width: 200px;" @onchange="(e) => HandleDropdownChange(e, order)" disabled="@isProcessing">
+                        <option value="">-- Select Action --</option>
+                        <option value="edit">Edit</option>
+                        <option value="delete">Delete</option>
+                        <option value="ship">Mark as Shipped</option>
+                    </select>
+                </div>
+            </li>
+        }
+    </ul>
+}
+
+<hr />
+
+<h4>Create Order</h4>
+
+<div class="d-flex gap-2 mb-3">
+    <input placeholder="Customer Name" class="form-control" @bind="newOrder.CustomerName" style="width:200px;" />
+    <input type="number" placeholder="Quantity" class="form-control" @bind="newOrder.Quantity" style="width:100px;" />
+    <input type="number" placeholder="Total" class="form-control" @bind="newOrder.Total" style="width:100px;" />
+    <button class="btn btn-success" @onclick="Create" disabled="@isCreating">
+        @if (isCreating)
+        {
+            <span>Creating...</span>
+        }
+        else
+        {
+            <span>Create</span>
+        }
+    </button>
+</div>
+
+@code {
+    List<Order> orders = new();
+    Order newOrder = new();
+    string? errorMessage;
+    bool isCreating = false;
+    bool isLoading = false;
+    bool isProcessing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            Console.WriteLine("Loading orders...");
+            var fetchedOrders = await OrderService.GetOrdersAsync();
+            Console.WriteLine($"Orders fetched: {fetchedOrders?.Count ?? 0}");
+
+            orders = fetchedOrders;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            Console.WriteLine($"StackTrace: {ex.StackTrace}");
+            errorMessage = $"Error loading orders: {ex.Message}";
+            StateHasChanged();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task Create()
+    {
+        if (string.IsNullOrWhiteSpace(newOrder.CustomerName))
+        {
+            errorMessage = "Customer name is required";
+            return;
+        }
+
+        if (newOrder.Total <= 0)
+        {
+            errorMessage = "Total must be greater than 0";
+            return;
+        }
+
+        if (newOrder.Quantity <= 0)
+        {
+            errorMessage = "Quantity must be greater than 0";
+            return;
+        }
+
+        try
+        {
+            errorMessage = null;
+            isCreating = true;
+
+            await OrderService.CreateOrderAsync(newOrder);
+            newOrder = new Order();
+            await Load();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error creating order: {ex.Message}";
+        }
+        finally
+        {
+            isCreating = false;
+        }
+    }
+
+    private async Task HandleDropdownChange(ChangeEventArgs e, Order order)
+    {
+        var selected = e.Value?.ToString();
+        if (string.IsNullOrEmpty(selected)) return;
+
+        try
+        {
+            isProcessing = true;
+            errorMessage = null;
+
+            switch (selected)
+            {
+                case "edit":
+                    Console.WriteLine($"Edit clicked for order {order.Id}");
+                    errorMessage = "Edit functionality coming soon!";
+                    break;
+                case "delete":
+                    Console.WriteLine($"Delete clicked for order {order.Id}");
+                    await OrderService.DeleteOrderAsync(order.Id!);
+                    errorMessage = null;
+                    await Load();
+                    break;
+                case "ship":
+                    Console.WriteLine($"Mark as shipped clicked for order {order.Id}");
+                    await OrderService.MarkAsShippedAsync(order.Id!);
+                    errorMessage = null;
+                    await Load();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+}
