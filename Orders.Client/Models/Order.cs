@@ -1,4 +1,4 @@
-﻿namespace OrderingSystemNew.Models
+﻿namespace Orders.Client.Models
 {
     public class Order
     {

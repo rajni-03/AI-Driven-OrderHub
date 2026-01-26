@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.OpenApi;
 using OrderingSystemNew.Components;
-using OrderingSystemNew.Services;
+using Orders.Client.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 

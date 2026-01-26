@@ -1,7 +1,7 @@
-﻿using System.Net.Http.Json;
-using OrderingSystemNew.Models;
+﻿using Orders.Client.Models;
+using System.Net.Http.Json;
 
-namespace OrderingSystemNew.Services
+namespace Orders.Client.Services
 {
     public class OrderService
     {

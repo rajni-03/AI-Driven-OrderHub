@@ -1,7 +1,8 @@
 ﻿@page "/orders"
+@using global::Orders.Client.Models
+@using global::Orders.Client.Services
 @rendermode InteractiveServer
-@using OrderingSystemNew.Models
-@inject OrderingSystemNew.Services.OrderService OrderService
+@inject OrderService OrderService
 
 <h3>Orders</h3>
 

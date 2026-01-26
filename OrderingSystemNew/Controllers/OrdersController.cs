@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OrderingSystemNew.Models;
+using Orders.Client.Models;
 
 [ApiController]
 [Route("api/[controller]")]
