@@ -34,18 +34,28 @@ else
     <ul class="list-group">
         @foreach (var order in orders)
         {
-            <li class="list-group-item mb-2">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <strong>@order.CustomerName</strong> — Qty: @order.Quantity — Total: @order.Total — @order.Status — @order.CreatedAt.ToString("dd-MM-yyyy HH:mm:ss")
-                    </div>
-                    <select class="form-select" style="width: 200px;" @onchange="(e) => HandleDropdownChange(e, order)" disabled="@isProcessing">
-                        <option value="">-- Select Action --</option>
-                        <option value="edit">Edit</option>
-                        <option value="delete">Delete</option>
-                        <option value="ship">Mark as Shipped</option>
-                    </select>
+            <li class="mb-3">
+                <div>
+                    <strong>@order.CustomerName</strong> — Quantity: @order.Quantity — Status: @order.Status
+                    <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="@(() => ToggleDetails(order.Id))">
+                        @(expandedOrderId == order.Id ? "Hide Details" : "Show Details")
+                    </button>
                 </div>
+
+                @if (expandedOrderId == order.Id)
+                {
+                    <div class="mt-2 ms-4 border-start ps-3">
+                        <p><strong>Order ID:</strong> @order.Id</p>
+                        <p><strong>Created At:</strong> @order.CreatedAt.ToString("dd-MM-yyyy HH:mm:ss")</p>
+                        <p><strong>Total:</strong> ₹@order.Total</p>
+                    </div>
+                }
+
+                <select class="form-select mt-1" style="width: 200px;" @onchange="(e) => HandleDropdownChange(e, order)" disabled="@isProcessing">
+                    <option value="">-- Select Action --</option>
+                    <option value="delete">Delete</option>
+                    <option value="ship">Mark as Shipped</option>
+                </select>
             </li>
         }
     </ul>
@@ -75,6 +85,7 @@ else
     List<Order> orders = new();
     Order newOrder = new();
     string? errorMessage;
+    string? expandedOrderId;
     bool isCreating = false;
     bool isLoading = false;
     bool isProcessing = false;
@@ -150,6 +161,11 @@ else
         }
     }
 
+    private void ToggleDetails(string? orderId)
+    {
+        expandedOrderId = expandedOrderId == orderId ? null : orderId;
+    }
+
     private async Task HandleDropdownChange(ChangeEventArgs e, Order order)
     {
         var selected = e.Value?.ToString();
@@ -162,10 +178,6 @@ else
 
             switch (selected)
             {
-                case "edit":
-                    Console.WriteLine($"Edit clicked for order {order.Id}");
-                    errorMessage = "Edit functionality coming soon!";
-                    break;
                 case "delete":
                     Console.WriteLine($"Delete clicked for order {order.Id}");
                     await OrderService.DeleteOrderAsync(order.Id!);
